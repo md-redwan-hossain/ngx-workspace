@@ -42,3 +42,4 @@ pids
 *.pid
 *.seed
 *.pid.lock
+**/*angular
