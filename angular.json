@@ -3,5 +3,31 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+    "ngx-extra": {
+      "projectType": "library",
+      "root": "projects/ngx-extra",
+      "sourceRoot": "projects/ngx-extra/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ngx-extra/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ngx-extra/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/ngx-extra/tsconfig.spec.json"
+          }
+        }
+      }
+    }
   }
 }
