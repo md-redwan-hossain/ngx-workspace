@@ -17,7 +17,7 @@ import { Observable, map } from "rxjs";
 import { cleanNullishFromObject } from "./helpers";
 import { createSignalChangeNotifier } from "./create-signal-change-notifier";
 
-type NavigateMethodFields = Pick<
+type SlimNavigationExtras = Pick<
   NavigationExtras,
   | "queryParamsHandling"
   | "onSameUrlNavigation"
@@ -27,12 +27,10 @@ type NavigateMethodFields = Pick<
 >;
 
 export type ReactiveQueryParamOptions<T> = {
-  queryParamKey: string;
-  source: Signal<T> | Observable<T>;
   handleInitialSnapshot?: (payload: T) => void;
   handleStream?: (payload: T) => void;
   injector?: Injector;
-  routerOptions?: NavigateMethodFields;
+  routerOptions?: SlimNavigationExtras;
   base64EncodingOptions?: {
     disableEncoding?: boolean;
     disableJsonStringifyWhenNoEncoding?: boolean;
@@ -49,7 +47,7 @@ class ReactiveQueryParamGlobalHandler {
 
   private schedulerNotifier = createSignalChangeNotifier();
   private currentKeys: Record<string, string | null> = {};
-  private navigationExtras: NavigateMethodFields = {};
+  private navigationExtras: SlimNavigationExtras = {};
 
   constructor() {
     effect(() => {
@@ -70,21 +68,25 @@ class ReactiveQueryParamGlobalHandler {
     });
   }
 
-  scheduleNavigation(key: string, value: string | null, navOptions: NavigateMethodFields) {
+  scheduleNavigation(key: string, value: string | null, navOptions: SlimNavigationExtras) {
     this.currentKeys[key] = value;
     this.navigationExtras = { ...cleanNullishFromObject(navOptions) };
     this.schedulerNotifier.notify();
   }
 }
 
-export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
+export function reactiveQueryParam<T>(
+  queryParamKey: string,
+  source: Signal<T> | Observable<T>,
+  options?: ReactiveQueryParamOptions<T>
+) {
   if (isDevMode() && !options?.injector) {
     assertInInjectionContext(reactiveQueryParam);
   }
 
-  const assertedInjector = options.injector ?? inject(Injector);
+  const assertedInjector = options?.injector ?? inject(Injector);
 
-  const blackList = options.queryParamOptions?.blackListedValues ?? [null, undefined, ""];
+  const blackList = options?.queryParamOptions?.blackListedValues ?? [null, undefined, ""];
 
   const useEncoding = !options?.base64EncodingOptions?.disableEncoding;
 
@@ -132,9 +134,9 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
     const route = inject(ActivatedRoute);
 
     // Handle initial snapshot
-    const payloadFromSnapshot = route.snapshot.queryParamMap.get(options.queryParamKey);
+    const payloadFromSnapshot = route.snapshot.queryParamMap.get(queryParamKey);
 
-    if (payloadFromSnapshot !== null && options.handleInitialSnapshot) {
+    if (payloadFromSnapshot !== null && options?.handleInitialSnapshot) {
       const deserialized = deserialize(payloadFromSnapshot);
       options.handleInitialSnapshot(deserialized);
     }
@@ -142,11 +144,11 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
     // Handle query param stream
     route.queryParamMap
       .pipe(
-        map((params) => params.get(options.queryParamKey)),
+        map((params) => params.get(queryParamKey)),
         takeUntilDestroyed()
       )
       .subscribe((payloadFromStream) => {
-        if (payloadFromStream !== null && options.handleStream) {
+        if (payloadFromStream !== null && options?.handleStream) {
           const deserialized = deserialize(payloadFromStream);
           options.handleStream(deserialized);
         }
@@ -155,10 +157,10 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
     // Handle source changes
     let source$: Observable<T>;
 
-    if (isSignal(options.source)) {
-      source$ = toObservable(options.source);
-    } else if (options.source instanceof Observable) {
-      source$ = options.source;
+    if (isSignal(source)) {
+      source$ = toObservable(source);
+    } else if (source instanceof Observable) {
+      source$ = source;
     } else {
       throw new Error("Invalid source");
     }
@@ -170,9 +172,9 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
         return;
       }
 
-      globalHandler.scheduleNavigation(options.queryParamKey, serializedValue, {
+      globalHandler.scheduleNavigation(queryParamKey, serializedValue, {
         ...cleanNullishFromObject(options?.routerOptions),
-        queryParamsHandling: options.routerOptions?.queryParamsHandling ?? "merge"
+        queryParamsHandling: options?.routerOptions?.queryParamsHandling ?? "merge"
       });
     });
   });
