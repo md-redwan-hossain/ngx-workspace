@@ -1,4 +1,5 @@
 import {
+  DestroyRef,
   Injectable,
   Injector,
   Signal,
@@ -8,17 +9,16 @@ import {
   isDevMode,
   isSignal,
   runInInjectionContext,
-  signal,
   untracked
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import LzString from "lz-string";
-import { Observable, map } from "rxjs";
-import { cleanNullishFromObject } from "./helpers";
+import { Observable, filter, map } from "rxjs";
 import { createSignalChangeNotifier } from "./create-signal-change-notifier";
+import { cleanNullishFromObject } from "./helpers";
 
-type SlimNavigationExtras = Pick<
+type NavigateMethodFields = Pick<
   NavigationExtras,
   | "queryParamsHandling"
   | "onSameUrlNavigation"
@@ -27,11 +27,14 @@ type SlimNavigationExtras = Pick<
   | "preserveFragment"
 >;
 
-export type ReactiveQueryParamOptions<T> = {
+type ReactiveQueryParamOptions<T> = {
+  queryParamKey: string;
+  source: Signal<T> | Observable<T>;
+  parse?: (rawData: any) => T | null;
   handleInitialSnapshot?: (payload: T) => void;
   handleStream?: (payload: T) => void;
   injector?: Injector;
-  routerOptions?: SlimNavigationExtras;
+  routerOptions?: NavigateMethodFields;
   base64EncodingOptions?: {
     disableEncoding?: boolean;
     disableJsonStringifyWhenNoEncoding?: boolean;
@@ -48,7 +51,7 @@ class ReactiveQueryParamGlobalHandler {
 
   private schedulerNotifier = createSignalChangeNotifier();
   private currentKeys: Record<string, string | null> = {};
-  private navigationExtras: SlimNavigationExtras = {};
+  private navigationExtras: NavigateMethodFields = {};
 
   constructor() {
     effect(() => {
@@ -69,19 +72,15 @@ class ReactiveQueryParamGlobalHandler {
     });
   }
 
-  scheduleNavigation(key: string, value: string | null, navOptions: SlimNavigationExtras) {
+  scheduleNavigation(key: string, value: string | null, navOptions: NavigateMethodFields) {
     this.currentKeys[key] = value;
     this.navigationExtras = { ...cleanNullishFromObject(navOptions) };
     this.schedulerNotifier.notify();
   }
 }
 
-export function reactiveQueryParam<T>(
-  queryParamKey: string,
-  source: Signal<T> | Observable<T>,
-  options: ReactiveQueryParamOptions<T> = {}
-) {
-  if (isDevMode() && !options.injector) {
+export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
+  if (isDevMode() && !options?.injector) {
     assertInInjectionContext(reactiveQueryParam);
   }
 
@@ -89,10 +88,10 @@ export function reactiveQueryParam<T>(
 
   const blackList = options.queryParamOptions?.blackListedValues ?? [null, undefined, ""];
 
-  const useEncoding = !options.base64EncodingOptions?.disableEncoding;
+  const useEncoding = !options?.base64EncodingOptions?.disableEncoding;
 
   const useStringifyOnNoEncoding =
-    !options.base64EncodingOptions?.disableJsonStringifyWhenNoEncoding;
+    !options?.base64EncodingOptions?.disableJsonStringifyWhenNoEncoding;
 
   const deserialize = (payload: string): T => {
     if (useEncoding) {
@@ -133,48 +132,72 @@ export function reactiveQueryParam<T>(
   runInInjectionContext(assertedInjector, () => {
     const globalHandler = inject(ReactiveQueryParamGlobalHandler);
     const route = inject(ActivatedRoute);
+    const destroyRef = inject(DestroyRef);
 
     // Handle initial snapshot
-    const payloadFromSnapshot = route.snapshot.queryParamMap.get(queryParamKey);
+    const payloadFromSnapshot = route.snapshot.queryParamMap.get(options.queryParamKey);
 
     if (payloadFromSnapshot !== null && options.handleInitialSnapshot) {
       const deserialized = deserialize(payloadFromSnapshot);
-      options.handleInitialSnapshot(deserialized);
+      if (!options.parse) {
+        options.handleInitialSnapshot(deserialized);
+      } else {
+        try {
+          const parsedValue = options.parse(deserialized);
+          if (parsedValue !== null) {
+            options.handleInitialSnapshot(parsedValue);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
     }
 
     // Handle query param stream
     route.queryParamMap
       .pipe(
-        map((params) => params.get(queryParamKey)),
+        map((params) => params.get(options.queryParamKey)),
+        filter((value) => value !== null),
         takeUntilDestroyed()
       )
       .subscribe((payloadFromStream) => {
-        if (payloadFromStream !== null && options.handleStream) {
-          const deserialized = deserialize(payloadFromStream);
+        if (!options.handleStream) {
+          return;
+        }
+        const deserialized = deserialize(payloadFromStream);
+        if (!options.parse) {
           options.handleStream(deserialized);
+        } else {
+          try {
+            const parsedValue = options.parse(deserialized);
+            if (parsedValue !== null) {
+              options.handleStream(parsedValue);
+            }
+          } catch (error) {
+            console.error(error);
+          }
         }
       });
 
     // Handle source changes
     let source$: Observable<T>;
 
-    if (isSignal(source)) {
-      source$ = toObservable(source);
-    } else if (source instanceof Observable) {
-      source$ = source;
+    if (isSignal(options.source)) {
+      source$ = toObservable(options.source);
+    } else if (options.source instanceof Observable) {
+      source$ = options.source;
     } else {
       throw new Error("Invalid source");
     }
 
-    source$.pipe(takeUntilDestroyed()).subscribe((value) => {
+    source$.pipe(takeUntilDestroyed(destroyRef)).subscribe(async (value) => {
       const serializedValue = serialize(value);
-
-      if (serializedValue === null && options.queryParamOptions?.preserveStaleOnBlacklistedValue) {
+      if (serializedValue === null && options?.queryParamOptions?.preserveStaleOnBlacklistedValue) {
         return;
       }
 
-      globalHandler.scheduleNavigation(queryParamKey, serializedValue, {
-        ...cleanNullishFromObject(options.routerOptions),
+      globalHandler.scheduleNavigation(options.queryParamKey, serializedValue, {
+        ...cleanNullishFromObject(options?.routerOptions),
         queryParamsHandling: options.routerOptions?.queryParamsHandling ?? "merge"
       });
     });
