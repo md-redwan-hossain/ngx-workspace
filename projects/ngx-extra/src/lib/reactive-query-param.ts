@@ -8,6 +8,7 @@ import {
   isDevMode,
   isSignal,
   runInInjectionContext,
+  signal,
   untracked
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
@@ -78,20 +79,20 @@ class ReactiveQueryParamGlobalHandler {
 export function reactiveQueryParam<T>(
   queryParamKey: string,
   source: Signal<T> | Observable<T>,
-  options?: ReactiveQueryParamOptions<T>
+  options: ReactiveQueryParamOptions<T> = {}
 ) {
-  if (isDevMode() && !options?.injector) {
+  if (isDevMode() && !options.injector) {
     assertInInjectionContext(reactiveQueryParam);
   }
 
-  const assertedInjector = options?.injector ?? inject(Injector);
+  const assertedInjector = options.injector ?? inject(Injector);
 
-  const blackList = options?.queryParamOptions?.blackListedValues ?? [null, undefined, ""];
+  const blackList = options.queryParamOptions?.blackListedValues ?? [null, undefined, ""];
 
-  const useEncoding = !options?.base64EncodingOptions?.disableEncoding;
+  const useEncoding = !options.base64EncodingOptions?.disableEncoding;
 
   const useStringifyOnNoEncoding =
-    !options?.base64EncodingOptions?.disableJsonStringifyWhenNoEncoding;
+    !options.base64EncodingOptions?.disableJsonStringifyWhenNoEncoding;
 
   const deserialize = (payload: string): T => {
     if (useEncoding) {
@@ -136,7 +137,7 @@ export function reactiveQueryParam<T>(
     // Handle initial snapshot
     const payloadFromSnapshot = route.snapshot.queryParamMap.get(queryParamKey);
 
-    if (payloadFromSnapshot !== null && options?.handleInitialSnapshot) {
+    if (payloadFromSnapshot !== null && options.handleInitialSnapshot) {
       const deserialized = deserialize(payloadFromSnapshot);
       options.handleInitialSnapshot(deserialized);
     }
@@ -148,7 +149,7 @@ export function reactiveQueryParam<T>(
         takeUntilDestroyed()
       )
       .subscribe((payloadFromStream) => {
-        if (payloadFromStream !== null && options?.handleStream) {
+        if (payloadFromStream !== null && options.handleStream) {
           const deserialized = deserialize(payloadFromStream);
           options.handleStream(deserialized);
         }
@@ -168,13 +169,13 @@ export function reactiveQueryParam<T>(
     source$.pipe(takeUntilDestroyed()).subscribe((value) => {
       const serializedValue = serialize(value);
 
-      if (serializedValue === null && options?.queryParamOptions?.preserveStaleOnBlacklistedValue) {
+      if (serializedValue === null && options.queryParamOptions?.preserveStaleOnBlacklistedValue) {
         return;
       }
 
       globalHandler.scheduleNavigation(queryParamKey, serializedValue, {
-        ...cleanNullishFromObject(options?.routerOptions),
-        queryParamsHandling: options?.routerOptions?.queryParamsHandling ?? "merge"
+        ...cleanNullishFromObject(options.routerOptions),
+        queryParamsHandling: options.routerOptions?.queryParamsHandling ?? "merge"
       });
     });
   });
