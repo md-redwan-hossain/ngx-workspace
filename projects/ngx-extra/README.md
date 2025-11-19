@@ -10,6 +10,10 @@ npm install ngx-extra
 
 ## API
 
+### `abstractControlSignal()`
+
+Convert Angular form controls to reactive signals. Tracks value, status, validation errors, touched/pristine states with automatic cleanup.
+
 ### `reactiveQueryParam()`
 
 Synchronize Angular signals with URL query parameters. Supports compression, serialization, and reactive updates.
