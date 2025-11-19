@@ -13,6 +13,7 @@ import {
   AbstractControl,
   FormControlStatus,
   PristineChangeEvent,
+  StatusChangeEvent,
   TouchedChangeEvent,
   ValueChangeEvent
 } from "@angular/forms";
@@ -51,6 +52,10 @@ export function abstractControlSignal<T>(
 
       if (newEvent instanceof TouchedChangeEvent) {
         internalState.touched.set(newEvent.touched);
+      }
+
+      if (newEvent instanceof StatusChangeEvent) {
+        internalState.status.set(newEvent.status);
       }
     });
 
