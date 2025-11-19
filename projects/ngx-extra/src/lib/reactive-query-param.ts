@@ -74,8 +74,34 @@ class ReactiveQueryParamGlobalHandler {
 
   scheduleNavigation(key: string, value: string | null, navOptions: SlimNavigationExtras) {
     this.currentKeys[key] = value;
-    this.navigationExtras = { ...cleanNullishFromObject(navOptions) };
+    this.setCurrentNavigationExtras(navOptions);
     this.schedulerNotifier.notify();
+  }
+
+  private setCurrentNavigationExtras(config: Partial<SlimNavigationExtras> = {}) {
+    const {
+      queryParamsHandling,
+      onSameUrlNavigation,
+      replaceUrl,
+      skipLocationChange,
+      preserveFragment
+    } = config;
+
+    if (queryParamsHandling || queryParamsHandling === "") {
+      this.navigationExtras.queryParamsHandling = queryParamsHandling;
+    }
+    if (onSameUrlNavigation) {
+      this.navigationExtras.onSameUrlNavigation = onSameUrlNavigation;
+    }
+    if (replaceUrl) {
+      this.navigationExtras.replaceUrl = replaceUrl;
+    }
+    if (skipLocationChange) {
+      this.navigationExtras.skipLocationChange = skipLocationChange;
+    }
+    if (preserveFragment) {
+      this.navigationExtras.preserveFragment = preserveFragment;
+    }
   }
 }
 
@@ -158,7 +184,7 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
       .pipe(
         map((params) => params.get(options.queryParamKey)),
         filter((value) => value !== null),
-        takeUntilDestroyed()
+        takeUntilDestroyed(destroyRef)
       )
       .subscribe((payloadFromStream) => {
         if (!options.handleStream) {
@@ -190,7 +216,7 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
       throw new Error("Invalid source");
     }
 
-    source$.pipe(takeUntilDestroyed(destroyRef)).subscribe(async (value) => {
+    source$.pipe(takeUntilDestroyed(destroyRef)).subscribe((value) => {
       const serializedValue = serialize(value);
       if (serializedValue === null && options?.queryParamOptions?.preserveStaleOnBlacklistedValue) {
         return;
