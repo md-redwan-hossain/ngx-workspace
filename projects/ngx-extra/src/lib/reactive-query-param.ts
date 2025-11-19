@@ -18,7 +18,7 @@ import { Observable, filter, map } from "rxjs";
 import { createSignalChangeNotifier } from "./create-signal-change-notifier";
 import { cleanNullishFromObject } from "./helpers";
 
-type NavigateMethodFields = Pick<
+export type SlimNavigationExtras = Pick<
   NavigationExtras,
   | "queryParamsHandling"
   | "onSameUrlNavigation"
@@ -27,14 +27,14 @@ type NavigateMethodFields = Pick<
   | "preserveFragment"
 >;
 
-type ReactiveQueryParamOptions<T> = {
+export type ReactiveQueryParamOptions<T> = {
   queryParamKey: string;
   source: Signal<T> | Observable<T>;
   parse?: (rawData: any) => T | null;
   handleInitialSnapshot?: (payload: T) => void;
   handleStream?: (payload: T) => void;
   injector?: Injector;
-  routerOptions?: NavigateMethodFields;
+  routerOptions?: SlimNavigationExtras;
   base64EncodingOptions?: {
     disableEncoding?: boolean;
     disableJsonStringifyWhenNoEncoding?: boolean;
@@ -51,7 +51,7 @@ class ReactiveQueryParamGlobalHandler {
 
   private schedulerNotifier = createSignalChangeNotifier();
   private currentKeys: Record<string, string | null> = {};
-  private navigationExtras: NavigateMethodFields = {};
+  private navigationExtras: SlimNavigationExtras = {};
 
   constructor() {
     effect(() => {
@@ -72,7 +72,7 @@ class ReactiveQueryParamGlobalHandler {
     });
   }
 
-  scheduleNavigation(key: string, value: string | null, navOptions: NavigateMethodFields) {
+  scheduleNavigation(key: string, value: string | null, navOptions: SlimNavigationExtras) {
     this.currentKeys[key] = value;
     this.navigationExtras = { ...cleanNullishFromObject(navOptions) };
     this.schedulerNotifier.notify();
