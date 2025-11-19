@@ -1,7 +1,6 @@
 import {
   assertInInjectionContext,
   computed,
-  DestroyRef,
   inject,
   Injector,
   isDevMode,
@@ -15,6 +14,7 @@ import {
   PristineChangeEvent,
   StatusChangeEvent,
   TouchedChangeEvent,
+  ValidationErrors,
   ValueChangeEvent
 } from "@angular/forms";
 
@@ -32,16 +32,15 @@ export function abstractControlSignal<T>(
   const assertedInjector = options.injector ?? inject(Injector);
 
   return runInInjectionContext(assertedInjector, () => {
-    const destroyRef = inject(DestroyRef);
-
     const internalState = Object.seal({
       value: signal<T>(source.getRawValue()),
       status: signal<FormControlStatus>(source.status),
       touched: signal<boolean>(source.touched),
-      pristine: signal<boolean>(source.pristine)
+      pristine: signal<boolean>(source.pristine),
+      errors: signal<ValidationErrors | null>(source.errors)
     });
 
-    source.events.pipe(takeUntilDestroyed(destroyRef)).subscribe((newEvent) => {
+    source.events.pipe(takeUntilDestroyed()).subscribe((newEvent) => {
       if (newEvent instanceof ValueChangeEvent) {
         internalState.value.set(newEvent.value);
       }
@@ -56,10 +55,12 @@ export function abstractControlSignal<T>(
 
       if (newEvent instanceof StatusChangeEvent) {
         internalState.status.set(newEvent.status);
+        internalState.errors.set(source.errors);
       }
     });
 
     return Object.seal({
+      errors: internalState.errors.asReadonly(),
       value: internalState.value.asReadonly(),
       touched: internalState.touched.asReadonly(),
       untouched: computed(() => {
