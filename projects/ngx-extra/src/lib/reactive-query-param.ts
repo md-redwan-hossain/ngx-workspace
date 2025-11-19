@@ -163,7 +163,11 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
     // Handle initial snapshot
     const payloadFromSnapshot = route.snapshot.queryParamMap.get(options.queryParamKey);
 
-    if (payloadFromSnapshot !== null && options.handleInitialSnapshot) {
+    if (
+      payloadFromSnapshot !== null &&
+      payloadFromSnapshot !== "" &&
+      options.handleInitialSnapshot
+    ) {
       const deserialized = deserialize(payloadFromSnapshot);
       if (!options.parse) {
         options.handleInitialSnapshot(deserialized);
@@ -184,6 +188,7 @@ export function reactiveQueryParam<T>(options: ReactiveQueryParamOptions<T>) {
       .pipe(
         map((params) => params.get(options.queryParamKey)),
         filter((value) => value !== null),
+        filter((value) => value !== ""),
         takeUntilDestroyed(destroyRef)
       )
       .subscribe((payloadFromStream) => {
