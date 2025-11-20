@@ -56,7 +56,8 @@ export function slimComponentState() {
     titleWithManipulationMode
   });
 
-  const chainableMethods: SlimComponentStateChainableMethods = Object.seal({
+  return Object.seal({
+    ...dataStates,
     setTitle(newTitle: string) {
       dataStates.title.set(newTitle);
       return this;
@@ -102,6 +103,4 @@ export function slimComponentState() {
       return this;
     }
   });
-
-  return Object.seal({ ...dataStates, ...chainableMethods });
 }
