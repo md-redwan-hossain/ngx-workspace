@@ -37,3 +37,7 @@ Subscribe to observables with automatic cleanup on component destruction.
 ### `throwResourceError()`
 
 Throw errors from `HttpResourceRef` when the status is error.
+
+### `SlimComponentState`
+
+Class for managing component state using signals. Supports manipulation modes, selection states, and network operation tracking with fluent API.
