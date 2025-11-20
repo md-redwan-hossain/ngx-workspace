@@ -16,7 +16,7 @@ import { ActivatedRoute, NavigationExtras, Router } from "@angular/router";
 import LzString from "lz-string";
 import { Observable, filter, map } from "rxjs";
 import { createSignalChangeNotifier } from "./create-signal-change-notifier";
-import { cleanNullishFromObject } from "./helpers";
+import { cleanNullishFromObject } from "../helpers";
 
 export type SlimNavigationExtras = Pick<
   NavigationExtras,
