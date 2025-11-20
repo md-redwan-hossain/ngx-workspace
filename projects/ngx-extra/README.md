@@ -38,6 +38,6 @@ Subscribe to observables with automatic cleanup on component destruction.
 
 Throw errors from `HttpResourceRef` when the status is error.
 
-### `SlimComponentState`
+### `slimComponentState`
 
-Class for managing component state using signals. Supports manipulation modes, selection states, and network operation tracking with fluent API.
+Function for managing component state using signals. Supports manipulation modes, selection states, and ui state with fluent API.
