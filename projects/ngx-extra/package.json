@@ -1,6 +1,6 @@
 {
   "name": "ngx-extra",
-  "version": "20.1.1",
+  "version": "20.1.2",
   "peerDependencies": {
     "@angular/common": "^20.3.12",
     "@angular/core": "^20.3.0",
