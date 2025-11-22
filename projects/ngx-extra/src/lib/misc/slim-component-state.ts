@@ -1,17 +1,6 @@
 import { signal, computed } from "@angular/core";
 import { ManipulationMode } from "../types";
 
-export interface SlimComponentStateChainableMethods {
-  setTitle(newTitle: string): this;
-  setManipulationMode(mode: ManipulationMode | null): this;
-  setIsCheckBoxSelectionEnabled(canSelect: boolean): this;
-  setCanSelectRow(canSelect: boolean): this;
-  setCanSelectMultipleItem(canSelect: boolean): this;
-  setIsAnyNetworkOperationRunning(status: boolean): this;
-  setIsDataManipulationUiActive(status: boolean): this;
-  resetAll(): this;
-}
-
 export function slimComponentState() {
   const isCheckBoxSelectionEnabled = signal<boolean>(false);
   const canSelectRow = signal<boolean>(false);
