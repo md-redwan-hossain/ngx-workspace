@@ -30,10 +30,10 @@ export function slimComponentState() {
   });
 
   const titleWithManipulationMode = computed(() => {
-    return `${manipulationModeLabel()}  ${title()}`;
+    return `${manipulationModeLabel()} ${title()}`.trim();
   });
 
-  const dataStates = Object.seal({
+  return Object.seal({
     isCheckBoxSelectionEnabled,
     canSelectRow,
     canSelectMultipleItem,
@@ -42,53 +42,49 @@ export function slimComponentState() {
     isAnyNetworkOperationRunning,
     isDataManipulationUiActive,
     manipulationModeLabel,
-    titleWithManipulationMode
-  });
-
-  return Object.seal({
-    ...dataStates,
+    titleWithManipulationMode,
     setTitle(newTitle: string) {
-      dataStates.title.set(newTitle);
+      title.set(newTitle);
       return this;
     },
 
     setManipulationMode(mode: ManipulationMode | null) {
-      dataStates.manipulationMode.set(mode);
+      manipulationMode.set(mode);
       return this;
     },
     setIsCheckBoxSelectionEnabled(canSelect: boolean) {
-      dataStates.isCheckBoxSelectionEnabled.set(canSelect);
+      isCheckBoxSelectionEnabled.set(canSelect);
       return this;
     },
 
     setCanSelectRow(canSelect: boolean) {
-      dataStates.canSelectRow.set(canSelect);
+      canSelectRow.set(canSelect);
       return this;
     },
 
     setCanSelectMultipleItem(canSelect: boolean) {
-      dataStates.canSelectMultipleItem.set(canSelect);
+      canSelectMultipleItem.set(canSelect);
       return this;
     },
 
     setIsAnyNetworkOperationRunning(status: boolean) {
-      dataStates.isAnyNetworkOperationRunning.set(status);
+      isAnyNetworkOperationRunning.set(status);
       return this;
     },
 
     setIsDataManipulationUiActive(status: boolean) {
-      dataStates.isDataManipulationUiActive.set(status);
+      isDataManipulationUiActive.set(status);
       return this;
     },
 
     resetAll() {
-      dataStates.isCheckBoxSelectionEnabled.set(false);
-      dataStates.canSelectRow.set(false);
-      dataStates.canSelectMultipleItem.set(false);
-      dataStates.manipulationMode.set(null);
-      dataStates.title.set("");
-      dataStates.isAnyNetworkOperationRunning.set(false);
-      dataStates.isDataManipulationUiActive.set(false);
+      isCheckBoxSelectionEnabled.set(false);
+      canSelectRow.set(false);
+      canSelectMultipleItem.set(false);
+      manipulationMode.set(null);
+      title.set("");
+      isAnyNetworkOperationRunning.set(false);
+      isDataManipulationUiActive.set(false);
       return this;
     }
   });
