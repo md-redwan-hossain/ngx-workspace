@@ -20,7 +20,7 @@ export class ReactiveFormErrorMessageComponent {
   readonly cssClass = input<string>("");
   readonly customErrors = input<Record<string, string>>();
 
-  readonly finalErrorsWithCodeAndMessage = computed(() => {
+  protected readonly finalErrorsWithCodeAndMessage = computed(() => {
     const label = this.formControlLabel();
     const customKv = this.customErrors() ?? {};
 
