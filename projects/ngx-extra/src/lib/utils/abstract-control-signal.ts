@@ -42,7 +42,7 @@ export function abstractControlSignal<T>(
 
     source.events.pipe(takeUntilDestroyed()).subscribe((newEvent) => {
       if (newEvent instanceof ValueChangeEvent) {
-        internalState.value.set(newEvent.value);
+        internalState.value.set(newEvent.source.getRawValue());
       }
 
       if (newEvent instanceof PristineChangeEvent) {
