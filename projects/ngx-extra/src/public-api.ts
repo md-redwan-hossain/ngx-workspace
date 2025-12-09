@@ -6,5 +6,7 @@ export * from "./lib/utils/rx-subscriber";
 export * from "./lib/utils/throw-resource-error";
 export * from "./lib/utils/abstract-control-signal";
 export * from "./lib/misc/slim-component-state";
+export * from "./lib/utils/slim-lazy-effect";
+export * from "./lib/utils/pairwise-signal";
 export * from "./lib/types";
 export * from "./lib/components/reactive-form-error-message.component";
