@@ -11,12 +11,12 @@ import {
 
 type Value<T> = { current: T; previous: T | null };
 
-type Opts<T> = {
+type PairwiseSignalOptions<T> = {
   equalityFn?: ValueEqualityFn<Value<T>>;
   injector?: Injector;
 };
 
-export function pairwiseSignal<T>(source: Signal<T>, options?: Opts<T>) {
+export function pairwiseSignal<T>(source: Signal<T>, options?: PairwiseSignalOptions<T>) {
   if (isDevMode() && !options?.injector) {
     assertInInjectionContext(pairwiseSignal);
   }
