@@ -1,8 +1,12 @@
-import { effect, EffectCleanupRegisterFn, Injector, Signal, untracked } from "@angular/core";
+import {
+  CreateEffectOptions,
+  effect,
+  EffectCleanupRegisterFn,
+  Signal,
+  untracked
+} from "@angular/core";
 
-type SlimLazyEffectOptions = {
-  injector?: Injector;
-};
+interface SlimLazyEffectOptions extends CreateEffectOptions {}
 
 export function slimLazyEffect<T>(
   dependency: Signal<T>,
