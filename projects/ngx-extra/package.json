@@ -1,9 +1,9 @@
 {
   "name": "ngx-extra",
-  "version": "20.1.9",
+  "version": "21.0.0",
   "peerDependencies": {
-    "@angular/common": "^20.3.12",
-    "@angular/core": "^20.3.0",
+    "@angular/common": "^21.0.6",
+    "@angular/core": "^21.0.6",
     "lz-string": "^1.5.0"
   },
   "dependencies": {
