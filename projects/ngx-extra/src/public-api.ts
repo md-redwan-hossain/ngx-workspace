@@ -8,5 +8,7 @@ export * from "./lib/utils/abstract-control-signal";
 export * from "./lib/misc/slim-component-state";
 export * from "./lib/utils/slim-effect";
 export * from "./lib/utils/pairwise-signal";
+export * from "./lib/utils/reactive-local-storage-item";
 export * from "./lib/types";
 export * from "./lib/components/reactive-form-error-message.component";
+export * from "./lib/pipes/memoize-fn.pipe";
