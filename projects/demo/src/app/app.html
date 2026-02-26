@@ -1,0 +1,8 @@
+<form [formGroup]="form">
+  <label>
+    Username:
+    <input type="text" [formControl]="form.controls.userName" />
+  </label>
+
+  <button type="submit" [disabled]="form.invalid">Submit</button>
+</form>

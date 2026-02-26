@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import {
   AbstractControl,
   FormControlStatus,
+  FormResetEvent,
   PristineChangeEvent,
   StatusChangeEvent,
   TouchedChangeEvent,
@@ -36,32 +37,40 @@ export function abstractControlSignal<T>(
       value: signal<T>(source.getRawValue()),
       status: signal<FormControlStatus>(source.status),
       touched: signal<boolean>(source.touched),
+      reset: signal<boolean>(false),
       pristine: signal<boolean>(source.pristine),
       errors: signal<ValidationErrors | null>(source.errors)
     });
 
     source.events.pipe(takeUntilDestroyed()).subscribe((newEvent) => {
-      if (newEvent instanceof ValueChangeEvent) {
-        internalState.value.set(source.getRawValue());
-      }
+      if (newEvent instanceof FormResetEvent) {
+        internalState.reset.set(true);
+      } else {
+        internalState.reset.set(false);
 
-      if (newEvent instanceof PristineChangeEvent) {
-        internalState.pristine.set(newEvent.pristine);
-      }
+        if (newEvent instanceof ValueChangeEvent) {
+          internalState.value.set(source.getRawValue());
+        }
 
-      if (newEvent instanceof TouchedChangeEvent) {
-        internalState.touched.set(newEvent.touched);
-      }
+        if (newEvent instanceof PristineChangeEvent) {
+          internalState.pristine.set(newEvent.pristine);
+        }
 
-      if (newEvent instanceof StatusChangeEvent) {
-        internalState.status.set(newEvent.status);
-        internalState.errors.set(source.errors);
+        if (newEvent instanceof TouchedChangeEvent) {
+          internalState.touched.set(newEvent.touched);
+        }
+
+        if (newEvent instanceof StatusChangeEvent) {
+          internalState.status.set(newEvent.status);
+          internalState.errors.set(source.errors);
+        }
       }
     });
 
     return Object.seal({
       errors: internalState.errors.asReadonly(),
       value: internalState.value.asReadonly(),
+      reset: internalState.reset.asReadonly(),
       touched: internalState.touched.asReadonly(),
       untouched: computed(() => {
         return !internalState.touched();
