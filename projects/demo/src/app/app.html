@@ -5,11 +5,21 @@
   </label>
   <br />
   <br />
+  <label>
+    Phone:
+    <input type="text" [formControl]="form.controls.phone" />
+  </label>
+  <br />
+  <br />
   <button type="button" (click)="onFormReset()">Form Reset</button>
 
   <br />
   <br />
   <button type="button" (click)="form.controls.userName.reset()">Control Reset</button>
+  <br />
+  <br />
+
+  <button type="button" (click)="form.markAllAsDirty()">Make form dirty</button>
   <br />
   <br />
   <button type="submit" [disabled]="form.invalid">Submit</button>

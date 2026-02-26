@@ -1,7 +1,9 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormResetEvent, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { abstractControlSignal } from 'ngx-extra';
+import { filter, map, of, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -12,10 +14,9 @@ import { abstractControlSignal } from 'ngx-extra';
 export class App {
   fb = inject(FormBuilder);
 
-  tracker = signal(false);
-
   form = this.fb.group({
     userName: this.fb.control<string | null>(null, Validators.required),
+    phone: this.fb.control<string | null>(null, Validators.required),
   });
 
   formState = abstractControlSignal(this.form);
@@ -23,20 +24,19 @@ export class App {
 
   onFormReset() {
     this.form.reset();
-    this.tracker.set(true);
   }
 
   constructor() {
     effect(() => {
+      console.log('form dirty', this.formState.dirty());
+    });
+
+    effect(() => {
       console.log('form reset', this.formState.reset());
     });
 
-    effect(() => {
-      console.log('username reset', this.userNameState.reset());
-    });
-
-    effect(() => {
-      console.log('tracker', this.tracker());
-    });
+    // effect(() => {
+    //   console.log('username reset', this.userNameState.reset());
+    // });
   }
 }
