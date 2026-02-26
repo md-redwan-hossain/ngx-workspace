@@ -25,12 +25,12 @@ type AbstractControlSignalOptions = {
 
 export function abstractControlSignal<T>(
   source: AbstractControl<T>,
-  options: AbstractControlSignalOptions = {}
+  options?: AbstractControlSignalOptions
 ) {
-  if (isDevMode() && !options.injector) {
+  if (isDevMode() && !options?.injector) {
     assertInInjectionContext(abstractControlSignal);
   }
-  const assertedInjector = options.injector ?? inject(Injector);
+  const assertedInjector = options?.injector ?? inject(Injector);
 
   return runInInjectionContext(assertedInjector, () => {
     const internalState = Object.seal({
