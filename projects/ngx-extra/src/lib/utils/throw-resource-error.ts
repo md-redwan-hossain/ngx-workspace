@@ -5,7 +5,8 @@ import {
   inject,
   runInInjectionContext,
   effect,
-  isDevMode
+  isDevMode,
+  untracked
 } from "@angular/core";
 
 /**
@@ -25,7 +26,9 @@ export function throwResourceError<T = any>(resorce: HttpResourceRef<T>, injecto
   runInInjectionContext(assertedInjector, () => {
     effect(() => {
       if (resorce.status() === "error") {
-        throw resorce.error();
+        untracked(() => {
+          throw resorce.error();
+        });
       }
     });
   });

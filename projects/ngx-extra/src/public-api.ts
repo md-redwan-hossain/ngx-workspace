@@ -1,6 +1,5 @@
 export * from "./lib/utils/reactive-query-param";
 export * from "./lib/utils/create-signal-change-notifier";
-export * from "./lib/utils/debounced-signal";
 export * from "./lib/utils/during-destroy";
 export * from "./lib/utils/throw-resource-error";
 export * from "./lib/utils/abstract-control-signal";

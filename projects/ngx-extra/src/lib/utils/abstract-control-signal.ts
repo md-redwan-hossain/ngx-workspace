@@ -18,7 +18,7 @@ import {
   ValidationErrors,
   ValueChangeEvent
 } from "@angular/forms";
-import { map, startWith } from "rxjs";
+import { map } from "rxjs";
 
 type AbstractControlSignalOptions = {
   injector?: Injector;
