@@ -9,4 +9,5 @@ export * from "./lib/utils/reactive-local-storage-item";
 export * from "./lib/types";
 export * from "./lib/components/reactive-form-error-message.component";
 export * from "./lib/pipes/memoize-fn.pipe";
+export * from "./lib/pipes/time-only.pipe";
 export * from "./lib/directives/toggle-validation-error-area.directive";
