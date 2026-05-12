@@ -24,8 +24,8 @@ type AbstractControlSignalOptions = {
   injector?: Injector;
 };
 
-export function abstractControlSignal<T>(
-  source: AbstractControl<T>,
+export function abstractControlSignal<TValue, TRawValue extends TValue = TValue>(
+  source: AbstractControl<TValue, TRawValue>,
   options?: AbstractControlSignalOptions
 ) {
   if (isDevMode() && !options?.injector) {
@@ -35,7 +35,7 @@ export function abstractControlSignal<T>(
 
   return runInInjectionContext(assertedInjector, () => {
     const internalState = Object.seal({
-      value: signal<T>(source.getRawValue()),
+      value: signal<TRawValue>(source.getRawValue()),
       status: signal<FormControlStatus>(source.status),
       touched: signal<boolean>(source.touched),
       pristine: signal<boolean>(source.pristine),
